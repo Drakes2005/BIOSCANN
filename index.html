@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>BioScan</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
+
+<style>
+
+body{
+font-family: Arial;
+text-align:center;
+background:#f4f4f4;
+}
+
+h1{
+color:#2e8b57;
+}
+
+button{
+padding:10px 20px;
+font-size:16px;
+background:#2e8b57;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+img{
+margin-top:20px;
+max-width:300px;
+}
+
+#result{
+margin-top:20px;
+font-size:20px;
+font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🌿 BioScan</h1>
+<p>Analizador de salud de plantas con inteligencia artificial</p>
+
+<input type="file" id="imageUpload" accept="image/*">
+<br><br>
+
+<button onclick="predict()">Analizar</button>
+
+<br>
+<img id="preview">
+
+<div id="result"></div>
+
+<script>
+
+const URL = "https://teachablemachine.withgoogle.com/models/8MhPXbp6U/";
+
+let model;
+
+async function init() {
+
+const modelURL = URL + "model.json";
+const metadataURL = URL + "metadata.json";
+
+model = await tmImage.load(modelURL, metadataURL);
+
+}
+
+init();
+
+function predict(){
+
+const input = document.getElementById("imageUpload");
+const preview = document.getElementById("preview");
+
+if(input.files.length == 0){
+alert("Sube una imagen primero");
+return;
+}
+
+preview.src = URL.createObjectURL(input.files[0]);
+
+preview.onload = async function(){
+
+const prediction = await model.predict(preview);
+
+let best = prediction[0];
+
+for(let i=1;i<prediction.length;i++){
+
+if(prediction[i].probability > best.probability){
+best = prediction[i];
+}
+
+}
+
+document.getElementById("result").innerHTML =
+"Resultado: " + best.className +
+" (" + (best.probability*100).toFixed(1) + "%)";
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
